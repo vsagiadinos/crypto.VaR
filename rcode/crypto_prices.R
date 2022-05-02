@@ -11,7 +11,6 @@ library(PortfolioAnalytics)
 symbols <- crypto_list(only_active = TRUE) %>%
             arrange(rank) %>%
             head(5)
-View(symbols)
 
 #Download daily data for top-5 active cryptocurrencies for past 3 years  
 prices <- crypto_history(symbols, convert = "EUR",
@@ -89,27 +88,37 @@ portfolio <- add.constraint(portfolio = portfolio,
 #Adding minimize portfolio risk objective
 portfolio <- add.objective(portfolio = portfolio,
                            type = "risk",
-                           name = "var")
+                           name = "StdDev")
 
-#Adding maximize portfolio return objective
-portfolio <- add.objective(portfolio = portfolio,
-                           type = "return",
-                           name = "mean")
+#Optimize portfolio based on constraints and objective using ROI method for the first 2 years
+global_portfolio <- optimize.portfolio(R = crypto.returns.xts[paste0("/", index(crypto.returns.xts)[1] + lubridate::years(2))],
+                                            portfolio = portfolio,
+                                            optimize_method = "ROI",
+                                            trace = T)
 
-#Optimize portfolio based on constraints and objectives using ROI method
-global_portfolio <- optimize.portfolio(R = crypto.returns.xts,
-                      portfolio = portfolio, optimize_method = "quadprog",
-                      trace = TRUE)
+#Rebalancing portfolio on a monthly basis after
+global_portfolio_reb <- optimize.portfolio.rebalancing(R = crypto.returns.xts,
+                                       portfolio = portfolio,
+                                       optimize_method = "ROI",
+                                       rebalance_on = "days",
+                                       training_period = nrow(crypto.returns.xts[paste0("/", index(crypto.returns.xts)[1] + lubridate::years(2))]),
+                                       trace = T)
 
-#Calculate portfolio returns
-crypto.returns$portfolio <- crypto.returns[,2] * global_portfolio$weights[1]+
-                            crypto.returns[,3] * global_portfolio$weights[2]+
-                            crypto.returns[,4] * global_portfolio$weights[3]+
-                            crypto.returns[,5] * global_portfolio$weights[4]+
-                            crypto.returns[,6] * global_portfolio$weights[5]
+#Calculate Portfolio log-returns and combine it with returns data frame
+crypto.returns$Portfolio <- as.numeric(rbind(Return.portfolio(crypto.returns.xts[paste0("/",
+                                                   index(crypto.returns.xts)[1] + 
+                                                   lubridate::years(2))],
+                                                   weights = extractWeights(global_portfolio)),
+                                  Return.portfolio(crypto.returns.xts[paste0(index(crypto.returns.xts)[1] + 
+                                                   lubridate::years(2),
+                                                   "/",
+                                                   index(xts::last(crypto.returns.xts)))],
+                                                   weights = extractWeights(global_portfolio_reb))))
+
 #Remove unused variables
 rm(prices, crypto.1, crypto.2, crypto.3, crypto.4, crypto.5, 
-   crypto.returns.xts, portfolio, global_portfolio, symbols)
+   crypto.returns.xts, portfolio, global_portfolio, global_portfolio_reb, 
+   symbols)
 
 #Save data to .rds file
 saveRDS(crypto.prices, file = "data/crypto.prices.rds")
