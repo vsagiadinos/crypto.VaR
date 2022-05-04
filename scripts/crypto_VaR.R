@@ -23,9 +23,7 @@ Box.test (crypto.returns$Portfolio ^ 2, lag = 12, type = "Ljung-Box")
 arima.forecast <- forecast::auto.arima(crypto.returns$Portfolio, trace = T, 
                                        test = "kpss", ic = c("bic"))
 #Initializing GARGH Model
-model_spec <- rugarch::ugarchspec(variance.model = list(model = "sGARCH",
-                                                        garchOrder = c(1,1)),
-                                  mean.model = list(armaOrder = c(forecast::arimaorder(arima.forecast)[1],
+model_spec <- rugarch::ugarchspec(mean.model = list(armaOrder = c(forecast::arimaorder(arima.forecast)[1],
                                                                   forecast::arimaorder(arima.forecast)[3])),
                                   distribution.model = "std")
 #GARCH Model fit
