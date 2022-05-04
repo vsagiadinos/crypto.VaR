@@ -4,17 +4,18 @@
 
 ### Step 1: Data preparation
 * Loading of the active cryptocurrencies via `crypto2` library
-* Arrange downloaded dataframe by rank
-* Use the first five rows and rbind them into a dataframe
-* Leveraging the previous dataframe, download the prices for the top-5 cryptocurrencies for the specified dates
-* Create 5 dataframes for each cryptocurrency by filtering the downloaded data by each cryptocurrency name and calculate the log-return
-* Bind all prices into a dataframe
-* Bind all log-returns to a dataframe omitting all NA values
-* Transform log-returns dataframe to an xts object
+* Arrange downloaded data frame by rank
+* Use the first five rows and bind them into a data frame
+* Leveraging the previous data frame, download the prices for the top-5 cryptocurrencies for specified dates again via `crypto2` library
+* Create 5 data frames for each cryptocurrency by filtering the downloaded data by each cryptocurrency name
+* Calculate the log-return
+* Bind all prices into a data frame
+* Bind all log returns to a data frame omitting all NA values
+* Transform log-returns data frame to an xts object
 
 ### Step 2: Portfolio optimisation
-* Initialise portfolio optimisation (add specifications, constraints and objective)
-* Find optimal weights for training period, using ROI method
+* Initialise portfolio optimisation (add specifications, constraints and objectives)
+* Find optimal weights for the training period, using the ROI method
 * Backtest portfolio optimal weights using daily rebalancing
 * Calculate portfolio returns using optimal weights
 * Save .RDS file with prices and log-returns
