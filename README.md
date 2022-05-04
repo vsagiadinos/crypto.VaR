@@ -15,7 +15,7 @@
 ### Step 2: Portfolio optimisation
 * Initialise portfolio optimisation (add specifications, constraints and objective)
 * Find optimal weights for training period, using ROI method
-* Backtest portfolio optimal weights using portoflio daily rebalancing
+* Backtest portfolio optimal weights using daily rebalancing
 * Calculate portfolio returns using optimal weights
 * Save .RDS file with prices and log-returns
 
