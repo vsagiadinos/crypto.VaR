@@ -1,6 +1,8 @@
 #Clear environment
 rm(list=ls())
 
+library(dplyr)
+
 #Load log-returns Data
 crypto.returns <- readRDS("data/crypto.returns.rds")
 
@@ -31,7 +33,7 @@ model_spec <- rugarch::ugarchspec(variance.model = list(model = "sGARCH"),
 model_fit <- rugarch::ugarchfit(spec = model_spec, 
                                  data = crypto.returns$Portfolio,
                                  out.sample = nrow(filter(crypto.returns,
-                                                          date >= (crypto.returns$date[1] + lubridate::years(2)))))
+                                                          date > (crypto.returns$date[1] + lubridate::years(2)))))
 #GARCH Model Backtesting
 model_roll <- rugarch::ugarchroll(spec = model_spec, data = crypto.returns$Portfolio,
                                   n.ahead = 1,
