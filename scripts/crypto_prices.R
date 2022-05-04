@@ -82,43 +82,34 @@ portfolio <- add.constraint(portfolio = portfolio,
                             type = "full_investment")
 
 #Adding constraint for positive weights
-portfolio <- add.constraint(portfolio = portfolio,
-                            type = "box", min = 0.00 , max = 1)
+portfolio <- add.constraint(portfolio = portfolio, type = "long-only")
 
 #Adding minimize portfolio risk objective
 portfolio <- add.objective(portfolio = portfolio,
                            type = "risk",
-                           name = "StdDev")
+                           name = "var")
 
-#Optimize portfolio based on constraints and objective using ROI method for the first 2 years
-global_portfolio <- optimize.portfolio(R = crypto.returns.xts[paste0("/", index(crypto.returns.xts)[1] + lubridate::years(2))],
-                                            portfolio = portfolio,
-                                            optimize_method = "ROI",
-                                            trace = T)
+#Optimize portfolio based on constraints and objective using ROI method
+global_portfolio <- optimize.portfolio(crypto.returns.xts,
+                                       portfolio = portfolio,
+                                       optimize_method = "ROI",
+                                       trace = T)
 
-#Rebalancing portfolio on a monthly basis after
+#Rebalancing portfolio on a monthly basis
 global_portfolio_reb <- optimize.portfolio.rebalancing(R = crypto.returns.xts,
                                        portfolio = portfolio,
                                        optimize_method = "ROI",
                                        rebalance_on = "days",
                                        training_period = nrow(crypto.returns.xts[paste0("/", index(crypto.returns.xts)[1] + lubridate::years(2))]),
+                                       rolling_window = nrow(crypto.returns.xts[paste0("/", index(crypto.returns.xts)[1] + lubridate::years(2))]),
                                        trace = T)
 
 #Calculate Portfolio log-returns and combine it with returns data frame
-crypto.returns$Portfolio <- as.numeric(rbind(Return.portfolio(crypto.returns.xts[paste0("/",
-                                                   index(crypto.returns.xts)[1] + 
-                                                   lubridate::years(2))],
-                                                   weights = extractWeights(global_portfolio)),
-                                  Return.portfolio(crypto.returns.xts[paste0(index(crypto.returns.xts)[1] + 
-                                                   lubridate::years(2),
-                                                   "/",
-                                                   index(xts::last(crypto.returns.xts)))],
-                                                   weights = extractWeights(global_portfolio_reb))))
+crypto.returns$Portfolio <- as.numeric(Return.portfolio(crypto.returns.xts, weights = extractWeights(global_portfolio)))
 
 #Remove unused variables
-rm(prices, crypto.1, crypto.2, crypto.3, crypto.4, crypto.5, 
-   crypto.returns.xts, portfolio, global_portfolio, global_portfolio_reb, 
-   symbols)
+rm(prices, crypto.1, crypto.2, crypto.3, crypto.4, crypto.5, crypto.returns.xts, 
+   portfolio, global_portfolio, global_portfolio_reb, symbols)
 
 #Save data to .rds file
 saveRDS(crypto.prices, file = "data/crypto.prices.rds")
